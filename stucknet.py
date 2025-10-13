@@ -32,6 +32,31 @@ class StuckNet:
             print(f"❌ Error initializing StuckNet: {e}")
             sys.exit(1)
     
+    def _is_greeting(self, query: str) -> bool:
+        """Check if the query is a greeting that should be handled directly"""
+        greeting_words = [
+            'hello', 'hi', 'hey', 'hey there', 'good morning', 'good afternoon', 
+            'good evening', 'greetings', 'what\'s up', 'howdy', 'yo', 'sup',
+            'hello stucknet', 'hi stucknet', 'hey stucknet', 'hi bro', 'hello bro',
+            'hey bro', 'hi there', 'hello there', 'hey there'
+        ]
+        
+        query_lower = query.lower().strip()
+        
+        # Check for exact matches
+        if query_lower in greeting_words:
+            return True
+            
+        # Check for greetings with stucknet
+        if any(greeting in query_lower for greeting in ['hello stucknet', 'hi stucknet', 'hey stucknet']):
+            return True
+            
+        # Check for simple greetings
+        if query_lower in ['hello', 'hi', 'hey', 'hi bro', 'hello bro', 'hey bro']:
+            return True
+            
+        return False
+
     def process_query(self, query: str) -> dict:
         """
         Process a user query by classifying and routing to appropriate handler
@@ -48,6 +73,10 @@ class StuckNet:
                 "content": "Please provide a valid query.",
                 "metadata": {}
             }
+        
+        # Check for greetings first - handle them directly
+        if self._is_greeting(query):
+            return self._handle_greeting(query)
         
         # Classify the query
         classification = self.classifier.classify(query.strip())
@@ -69,6 +98,39 @@ class StuckNet:
                 "content": "Unknown query type.",
                 "metadata": {"classification": classification}
             }
+    
+    def _handle_greeting(self, query: str) -> dict:
+        """Handle greeting queries with human-like responses"""
+        print("👋 Processing as Greeting...")
+        
+        # Generate a natural, human-like greeting response
+        greeting_responses = [
+            "Hello! 👋 I'm StuckNet, your AI assistant! How can I help you today?",
+            "Hi there! 😊 Great to meet you! I'm StuckNet, ready to assist you with any questions.",
+            "Hey! 👋 Nice to see you! I'm StuckNet, your AI assistant. What can I do for you?",
+            "Hello! 🤖 I'm StuckNet, created by Sanchit Thorat. I'm here to help with any queries you have!",
+            "Hi! 😄 Welcome! I'm StuckNet, your intelligent AI assistant. How can I assist you today?"
+        ]
+        
+        # Select a response based on the query
+        query_lower = query.lower().strip()
+        
+        if 'stucknet' in query_lower:
+            response = "Hello! 👋 Yes, I'm StuckNet, your AI assistant! How can I help you today?"
+        elif 'bro' in query_lower:
+            response = "Hey bro! 👋 I'm StuckNet, your AI assistant! What's up? How can I help you?"
+        else:
+            import random
+            response = random.choice(greeting_responses)
+        
+        return {
+            "type": "greeting",
+            "content": response,
+            "metadata": {
+                "handler": "greeting_handler",
+                "query": query
+            }
+        }
     
     def _handle_general_query(self, query: str, classification: dict) -> dict:
         """Handle general knowledge queries"""
