@@ -1,0 +1,12 @@
+# Query Classification Model Inference Requirements
+# Minimal dependencies for running the trained model
+
+scikit-learn>=1.0.0
+numpy>=1.21.0
+joblib>=1.1.0
+
+# Web Search Brain Dependencies (optional)
+google-api-python-client>=2.0.0
+google-generativeai>=0.3.0
+google-auth-oauthlib>=1.0.0
+google-auth>=2.0.0

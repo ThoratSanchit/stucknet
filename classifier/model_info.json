@@ -1,0 +1,16 @@
+{
+  "class_names": [
+    "General Query",
+    "Web Query",
+    "Task Query"
+  ],
+  "class_mapping": {
+    "0": "General Query",
+    "1": "Web Query",
+    "2": "Task Query"
+  },
+  "model_type": "logistic",
+  "accuracy": 0.9984,
+  "training_samples": 4995,
+  "description": "Query Classification Model - 99.84% Accuracy"
+}
