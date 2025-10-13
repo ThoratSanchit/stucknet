@@ -20,6 +20,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'handlers'))
 from query_classifier_inference import QueryClassifier
 from general_query import get_ai_answer
 from web_search import fetch_live_results, summarize_results
+from task_manager import handle_task_query, is_task_query, start_reminder_system
 
 class StuckNet:
     """
@@ -32,6 +33,10 @@ class StuckNet:
         try:
             self.classifier = QueryClassifier()
             print("✅ StuckNet ready!")
+            
+            # Start the AI-powered reminder system
+            start_reminder_system()
+            
         except Exception as e:
             print(f"❌ Error initializing StuckNet: {e}")
             sys.exit(1)
@@ -81,6 +86,10 @@ class StuckNet:
         # Check for greetings first - handle them directly
         if self._is_greeting(query):
             return self._handle_greeting(query)
+        
+        # Check for task queries first - handle them directly
+        if is_task_query(query):
+            return self._handle_task_query_direct(query)
         
         # Classify the query
         classification = self.classifier.classify(query.strip())
@@ -135,6 +144,26 @@ class StuckNet:
                 "query": query
             }
         }
+    
+    def _handle_task_query_direct(self, query: str) -> dict:
+        """Handle task queries directly without classification"""
+        print("⚙️ Processing as Task Query (Direct)...")
+        try:
+            response = handle_task_query(query)
+            return {
+                "type": "task",
+                "content": response,
+                "metadata": {
+                    "handler": "task_manager.py",
+                    "status": "direct_handling"
+                }
+            }
+        except Exception as e:
+            return {
+                "type": "error",
+                "content": f"Error processing task query: {str(e)}",
+                "metadata": {}
+            }
     
     def _handle_general_query(self, query: str, classification: dict) -> dict:
         """Handle general knowledge queries"""
@@ -195,17 +224,30 @@ class StuckNet:
             }
     
     def _handle_task_query(self, query: str, classification: dict) -> dict:
-        """Handle task-oriented queries (future implementation)"""
+        """Handle task-oriented queries"""
         print("⚙️ Processing as Task Query...")
-        return {
-            "type": "task",
-            "content": f"Task query detected: '{query}'\n\nTask handling is not yet configured. This feature will be available in future updates.",
-            "metadata": {
-                "classification": classification,
-                "handler": "task-handler (future)",
-                "status": "not_implemented"
+        try:
+            # Check if it's a task-related query
+            if is_task_query(query):
+                response = handle_task_query(query)
+                return {
+                    "type": "task",
+                    "content": response,
+                    "metadata": {
+                        "classification": classification,
+                        "handler": "task_manager.py",
+                        "status": "implemented"
+                    }
+                }
+            else:
+                # If classified as task but not task-related, route to general
+                return self._handle_general_query(query, classification)
+        except Exception as e:
+            return {
+                "type": "error",
+                "content": f"Error processing task query: {str(e)}",
+                "metadata": {"classification": classification}
             }
-        }
     
     def interactive_mode(self):
         """Run StuckNet in interactive mode"""
@@ -269,7 +311,7 @@ class StuckNet:
         print(f"  • Available Classes: {', '.join(self.classifier.class_names)}")
         print(f"  • General Handler: general-query.py (for knowledge questions)")
         print(f"  • Web Handler: web-search.py (for real-time web searches)")
-        print(f"  • Task Handler: Future implementation (for task-oriented queries)")
+        print(f"  • Task Handler: task_manager.py (for task management)")
         print(f"\n💡 How I Work:")
         print(f"  1. I analyze your query using my 99.84% accurate classifier")
         print(f"  2. I route it to the best handler for your specific need")
