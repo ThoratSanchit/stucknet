@@ -13,6 +13,10 @@ Author: Sanchit Thorat (Agent S)
 
 import sys
 import os
+
+# Add handlers directory to path
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'handlers'))
+
 from query_classifier_inference import QueryClassifier
 from general_query import get_ai_answer
 from web_search import fetch_live_results, summarize_results
